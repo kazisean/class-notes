@@ -1,0 +1,44 @@
+Front;Back
+Describe the request‑response flow of a traditional (multi‑page) web application.;Browser sends an HTTP request (via URL, link, or form) → Express (server) queries/updates the database → fills an HTML template → sends HTML in the response body → browser renders a new page.
+What key difference makes a Single‑Page Application (SPA) feel like a native app compared to a traditional web app?;"In an SPA the initial page stays loaded; JavaScript fetches data in the background and updates the DOM without full page reloads."
+What does AJAX stand for?;Asynchronous JavaScript and XML (though JSON is used more often than XML).
+List the five core technologies that make AJAX possible.;"HTML & CSS for presentation; JavaScript & DOM APIs for interaction; XMLHttpRequest/fetch for HTTP; a server‑side application (e.g., Express); and a data format (usually JSON)."
+Give the 4‑step pattern for using XMLHttpRequest.;1) Create `new XMLHttpRequest()`  2) `open(method, url, async)`  3) attach `load` & `error` handlers  4) `send([body])`.
+Which two XMLHttpRequest properties give you the status and body of a response?;`status` (HTTP status code) and `responseText` (response body string).
+Rewrite an XMLHttpRequest call using the modern Fetch API in one line.;"`fetch('/api/messages').then(r=>r.json()).then(data=>console.log(data));`"
+State the rule enforced by the Same‑Origin Policy (SOP).;Scripts may read responses only if protocol, host, and port match the page’s origin.
+Why does SOP exist? Name the main threat it mitigates.;It blocks Cross‑Site Request Forgery (CSRF) and other attacks that could abuse a user’s logged‑in session on another site.
+What header enables Cross‑Origin Resource Sharing (CORS)?;`Access‑Control‑Allow‑Origin` (often set to `*` or a specific origin).
+If a GET request is cross‑origin and the server does NOT include CORS headers, what happens in the browser?;"The request is made, but JavaScript is prevented from reading the response; the console shows a CORS error."
+Explain CSRF in one sentence.;A malicious site tricks a user’s browser into making authenticated requests to another site where the user is logged in.
+How do hidden form tokens plus SOP stop CSRF?;"Token prevents forged POSTs; SOP stops scripts on other origins from reading the token value."
+What Express method sends a JSON response from an object?;`res.json(object)`.
+Demonstrate a minimal Express route that returns all messages as JSON.;"```js
+app.get('/api/messages', (req,res)=>{
+  Message.find({},(e,docs)=>res.json(docs));
+});
+```"
+Which middleware lets you support PUT & DELETE from HTML forms or old browsers?;`methodOverride()` middleware.
+How do you globally allow all origins (development only) in Express?;Install `cors` and add `app.use(require('cors')())`.
+Match these CRUD actions to HTTP verbs: Create, Read, Update/Replace, Delete.;POST → Create, GET → Read, PUT/PATCH → Update, DELETE → Delete.
+Why is PUT considered idempotent?;Sending the same PUT request multiple times leaves the resource in the same state after the first success.
+Give the meaning of status codes 200, 201, 204, 404, 405.;200 OK, 201 Created, 204 No Content, 404 Not Found, 405 Method Not Allowed.
+List the four qualities of a ‘beautiful’ API identified by Satrom.;Usable, Self‑describing, Efficient, Responsive.
+What two key words summarise good API UX according to the book?;Focus and Consistency.
+Define Hypermedia As The Engine Of Application State (HATEOAS).;A REST constraint where each response contains links/actions that guide the client through valid state transitions.
+Give one benefit and one drawback of using hypermedia links in APIs.;Benefit: Clients adapt automatically to changes.  Drawback: Requires extra round‑trips or caching to discover links.
+What request parameter can embed related entities directly in a response?;`embed` (e.g., `?embed=artist`).
+How would you ask an API for albums sorted by year descending then name ascending?;`GET /albums?sort=year+desc,name+asc`
+Write a paging example that fetches the 3rd page of 10‑item chunks.;`GET /albums?page=3&limit=10`
+Which HTTP headers should you set for proper client‑side caching?;`Cache‑Control`, `Expires`, and entity tags via `ETag`.
+Name three quick wins for speeding up an API.;Cache common queries in Redis/Memcached, compress responses (gzip), paginate large lists.
+Which endpoint lists public repos for a GitHub user?;`GET https://api.github.com/users/:username/repos`
+Why does calling that endpoint from `http://localhost:3000` succeed without extra config?;GitHub’s API sends `Access‑Control‑Allow‑Origin: *`, satisfying CORS.
+In the repo viewer example, where do you insert the repo names in the DOM?;Replace (or build) a `<ul>` inside a container div with `<li>` elements for each repo.
+Which XHR event occurs if the network fails (e.g., DNS error)?;`error` event.
+What argument can you pass to `send()` when making a POST request?;A string (often JSON or form‑encoded data) to be used as the request body.
+What does the third parameter of `open()` control?;"Whether the request is asynchronous (`true`, default) or synchronous (`false`, blocking; rarely used)."
+Do these two URLs share an origin? `http://store.example.com:80/dir` vs `https://store.example.com/dir`;No – different protocol (http vs https).
+Do these share an origin? `http://store.example.com` vs `http://news.example.com`;No – different host subdomain (store vs news).
+Which Express helper sends a 405 error in JSON via express-error-handler?;`errorHandler.httpError(405)` used after other verbs.
+What CLI command installs Express in a project?;`npm install express` (or `npm i express`).

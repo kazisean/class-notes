@@ -1,0 +1,2 @@
+pandoc markdowns/basic-algorithm.md --toc -s -o basic-algorithm-notes.pdf -V geometry:"margin=1in" --highlight-style=tango --pdf-engine=xelatex 
+pandoc markdowns/ait.md --toc -s -o ait-notes.pdf -V geometry:"margin=1in" --highlight-style=tango --pdf-engine=xelatex 
