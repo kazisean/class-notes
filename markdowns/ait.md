@@ -106,7 +106,44 @@ button.addEventListener('click', function (e) {
 ```
 
 
+XHR sucess block
+```js
+if (x.status >= 200 && x.staus <= 400 ){
+  const data = JSON.parse(x.responseText);
+}
+```
+Fetch write block
 
+```js
+const res = await fetch ('https://api.com/get/asda', {
+  method: 'POST'
+  headers: {
+    'Content-Type' = 'application/json'
+  },
+  body: JSON.stringify({text})
+})
+```
+promise fetched data
+```js
+const data = await fetch(url).then(r => r.json())
+```
+
+
+Rest API example
+
+
+```js
+router.get('/api/messages', async (req, res ) => {
+  const msgs = await Messages.find();
+  res.json(msgs);
+})
+
+router.post('/api/messages', async (req, res) => {
+  const msgs = await Message.create({text: req.body.text, date: Date.now()});
+  res.status(201).json({id:msgs._id})
+})
+
+```
 
 
 
