@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Interactive flashcard drill with binary (good / bad) grading
-and a simple spaced-repetition scheduler that runs for 2 hours.
+Interactive flash-card drill with a binary (good / bad) grading
+and a simple spaced-repetition scheduler that never exceeds 60 min.
 """
-
-import time
-import heapq
+import time, heapq
 from datetime import datetime, timedelta
+
+MAX_INTERVAL = 60            # never let a card wait longer than 1 hour fix la8r cram
 
 # ------------ 1) Flashcard data ---------------------------------------------
 CARDS = [
@@ -105,76 +105,66 @@ CARDS = [
       "1⃣ Founder-market fit: Are you uniquely qualified to solve this? 2⃣ Market size: Can it become a $1 B+ opportunity? 3⃣ Problem acuteness: Is it an urgent, painful problem? 4⃣ Competition: Who else is tackling it and what’s your edge? 5⃣ Personal want: Do you (or people you know) genuinely need this? 6⃣ Timing: Did something recently make this possible or necessary? 7⃣ Proxies: Are there adjacent big winners that hint the market is viable? 8⃣ Long-term commitment: Will you gladly work on it for years? 9⃣ Scalability: Can revenue grow much faster than costs? 🔟 Idea space quality: Is the broader area fertile for pivots and innovation?"),
 ]
 
-
-# ------------ 2) Scheduler helpers ------------------------------------------
+# ------------ 2) Scheduler helpers -----------------------------------------
 class Card:
     def __init__(self, q, a):
         self.q = q
         self.a = a
-        self.interval = 0          # minutes; 0 means learn now
-        self.due = datetime.now()  # next time it should be asked
-        self.reps = 0              # successful consecutive reviews
+        self.interval = 0          # minutes; 0 → ask immediately
+        self.due = datetime.now()  # when the card is next due
+        self.reps = 0              # consecutive GOOD answers
 
     def schedule(self, good: bool):
         """
-        Update interval with a binary SM-2 flavor:
-        - If response is bad → reset interval to 1 min.
-        - If good:
-            first success → 1 min
-            second → 6 min
-            subsequent → interval *= 2
+        Binary SM-2 variant with a 60-minute ceiling.
+
+        bad  → interval = 1 min, reps reset
+        good → 1, 6, 12, 24, 48, 60 … (doubling but never > 60)
         """
-        if not good:
+        if not good:                     # ❌ BAD
             self.reps = 0
             self.interval = 1
-        else:
+        else:                            # ✅ GOOD
             self.reps += 1
             if self.reps == 1:
-                self.interval = 1
+                self.interval = 1        # first success
             elif self.reps == 2:
-                self.interval = 6
+                self.interval = 6        # second success
             else:
-                self.interval *= 2
+                self.interval = min(self.interval * 2, MAX_INTERVAL)
 
         self.due = datetime.now() + timedelta(minutes=self.interval)
 
-    def __lt__(self, other):
-        """Needed for heapq; compare by due time."""
+    def __lt__(self, other):             # let heapq order by due time
         return self.due < other.due
 
-# Build a priority queue (min-heap) ordered by due time
+# Build a min-heap ordered by due time
 queue = [Card(q, a) for q, a in CARDS]
 heapq.heapify(queue)
 
-# ------------ 3) Main review loop -------------------------------------------
+# ------------ 3) Main review loop (unchanged except for comments) ----------
 START = datetime.now()
 END   = START + timedelta(hours=2)
 
-print("\n🔑  Spaced-Repetition Flashcards – 2-hour session")
-print("   Type 1 for GOOD (knew it)  |  2 for BAD (didn't know)\n")
+print("\n🔑  Spaced-Repetition Flash-cards – 2-hour session")
+print("   Type 1 if you knew it  |  2 if you didn't know\n")
 
 try:
     while datetime.now() < END and queue:
-        # Pull the next due card; if not due yet, sleep a bit
         card = heapq.heappop(queue)
         wait_sec = (card.due - datetime.now()).total_seconds()
         if wait_sec > 0:
-            time.sleep(min(wait_sec, 2))  # sleep max 2 s to keep loop responsive
+            time.sleep(min(wait_sec, 2))     # keep the loop responsive
 
-        # Ask the question
         print(f"\nQ: {card.q}")
-        while True:
-            resp = input("Your grade? 1 = good, 2 = bad → ").strip()
-            if resp in ("1", "2"):
-                break
+        while (resp := input("Your grade? 1 = know, 2 = don't know → ").strip()) not in ("1", "2"):
             print("   Please enter 1 or 2.")
 
         good = (resp == "1")
         if not good:
             print(f"👉  Answer: {card.a}")
 
-        # Reschedule and put back in queue
-        card.schedule(good)
+        card.schedule(good)                  # reschedule and re-queue
         heapq.heappush(queue, card)
 
     print("\n🎉 Session finished! Great work.")
